@@ -1,1 +1,1 @@
-# COVID19-hackaton
+# COVID19-hackathon
