@@ -40,7 +40,7 @@ def mask_original(filepath_CT, filepath_mask):
     Mask and normalize original CT. 
     """
     I = np.array(nib.load(filepath_CT).dataobj)
-    I = normalize(I, -1350, 150)
+    I = normalize(I, -1000, 400)
     M, _ = nrrd.read(filepath_mask)
     
     nS = np.where(M==1, I, M)
@@ -66,7 +66,7 @@ def mask_original(filepath_CT, filepath_mask):
         #plt.imshow(aa.squeeze(),)
         #plt.show()
         """
-    selected_slices = np.stack(l, axis=2 )   
+    selected_slices = np.stack(l, axis=2)   
     return selected_slices
 
 

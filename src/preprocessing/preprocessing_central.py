@@ -37,7 +37,7 @@ def mask_original(filepath_CT, filepath_mask, nb_central_slices=10):
     Mask and normalize original CT. Select only preset number of central slices. 
     """
     I = np.array(nib.load(filepath_CT).dataobj)
-    I = normalize(I, -1350, 150)
+    I = normalize(I, -1000, 400)
     M, _ = nrrd.read(filepath_mask)
     
     nS = np.where(M==1, I, M)
