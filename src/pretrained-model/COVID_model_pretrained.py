@@ -49,7 +49,7 @@ class MYDataset(Dataset):
 				slicepath = path + slice_name
 				img = torch.tensor(np.load(slicepath))
 				img = img.repeat(3, 1, 1)
-				if(transforms):
+				if(self.transforms):
 					img = self.transforms(img)
 
 				current_slices.append(img)
@@ -64,7 +64,7 @@ class MYDataset(Dataset):
 				slicepath = path + slice_name
 				img = torch.tensor(np.load(slicepath))
 				img = img.repeat(3, 1, 1)
-				if(transforms):
+				if(self.transforms):
 					img = self.transforms(img)
 
 				current_slices.append(img)
