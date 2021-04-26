@@ -44,10 +44,11 @@ def test(model, dataloaders, args):
 	model.eval()
 	real_test_predictions = []
 	for mode, dataloader in dataloaders.items():
-		for (x, labels) in dataloader:
+		for (x, color, labels) in dataloader:
 		    x = x.to(args['device'])
+		    color = color.to(args['device'])
 		    label = labels.to(args['device'])
-		    pred = model(x)
+		    pred = model(x, color)
 		    if(mode == 'real_test'):
 		        real_test_predictions.extend(list(pred.flatten().data.cpu().numpy()))    
 
@@ -62,7 +63,8 @@ if __name__ == "__main__":
 
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	model = Network()
-	model.load_state_dict(torch.load("models/pretrained_model_data_augmentation.pt"))
+	model.load_state_dict(torch.load("models/pretrained_model_data_augmentation_0.pt"))
+#	model.load_state_dict(torch.load("models/pretrained_model_0.pt"))	
 	model = model.to(device)
 	arguments = {'device':device}
 
