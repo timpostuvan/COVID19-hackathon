@@ -23,6 +23,15 @@ class FocalLossObjective(object):
         # Returns list of pairs (der1, der2)
         gamma = 2.
         # alpha = 1.
+
+        weights = []
+        for i in range(len(targets)):
+            if(targets[i] == 0.0):
+                weights.append(0.18)
+            else:
+                weights.append(0.82)
+
+
         assert len(approxes) == len(targets)
         if weights is not None:
             assert len(weights) == len(approxes)
@@ -52,45 +61,32 @@ class FocalLossObjective(object):
 
 
 
-df = pd.read_csv("../../data/embedded-datasets/train_embedded_dataset.csv")
-df = df.sample(frac=1, random_state=744)
-
-
-print("COVID positive cases: {}".format(len(df[df.label==1].index)))
+df_train = pd.read_csv("../../data/embedded-datasets/train_embedded_dataset.csv")
+df_test = pd.read_csv("../../data/embedded-datasets/test_embedded_dataset.csv")
 features = (["v{}".format(str(x)) for x in range(0, 512)] 
-		  + ["h{}".format(str(x)) for x in range(0, 14)])
+          + ["h{}".format(str(x)) for x in range(10, 14)])
 
 
-aucs = []
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=744)
-target = df.label
-for train_index, test_index in skf.split(np.zeros(len(target)), target):
-	X_test = df.loc[test_index][features]
-	y_test = df.loc[test_index]['label']
+X = df_train.loc[:][features].to_numpy()
+y = df_train["label"].to_numpy()
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.15)
 
-	train_index, val_index = train_test_split(train_index, test_size=0.15, random_state=744)
-	X_train = df.loc[train_index][features]
-	y_train = df.loc[train_index]['label']
-
-	X_val = df.loc[val_index][features]
-	y_val = df.loc[val_index]['label']
-
-	train_pool = Pool(X_train, y_train)
-	validate_pool = Pool(X_val, y_val)
-
-	#clf1 = LogisticRegression(multi_class='multinomial', random_state=1)
-	#clf2 = CatBoostClassifier(loss_function=FocalLossObjective(), eval_metric="AUC", verbose=False)
-	#clf3 = GaussianNB()
-
-	#model = VotingClassifier(estimators=[('lr', clf1), ('cb', clf2), ('gnb', clf3)], voting='soft')
-	model = CatBoostClassifier(loss_function=FocalLossObjective(), 
-							   eval_metric="AUC", 
-							   iterations=300,
-							   verbose=False
-							   )
-
-	model.fit(train_pool, eval_set=validate_pool)
-	aucs.append(roc_auc_score(y_test, model.predict_proba(X_test)[:, 1]))
+X_test = df_test.loc[:][features]
+test_files = df_test.loc[:]["file"]
 
 
-print(np.mean(aucs))
+train_pool = Pool(X_train, y_train)
+validate_pool = Pool(X_val, y_val)
+
+model = CatBoostClassifier(loss_function=FocalLossObjective(), 
+						   eval_metric="AUC", 
+						   iterations=500,
+					#	   verbose=False
+						   )
+
+model.fit(train_pool, eval_set=validate_pool)
+
+test_predictions = model.predict_proba(X_test)[:, 1]
+
+df_predictions = pd.DataFrame({"file":test_files, "label":test_predictions})
+df_predictions.to_csv("../../data/test_predictions_extracted_features.txt", header=False, index=False)
