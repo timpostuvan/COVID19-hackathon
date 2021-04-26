@@ -1,3 +1,4 @@
 data
 papers
 src/models
+*__pycache__*
